@@ -1,0 +1,17 @@
+# Ignore everything
+*
+
+# But not these directories
+!*/
+
+# And not these specific files/folders
+!.gitignore
+!docs/
+!docs/**
+!scripts/
+!scripts/**
+!systemd/
+!systemd/**
+!uninstall/
+!uninstall/**
+!install.sh

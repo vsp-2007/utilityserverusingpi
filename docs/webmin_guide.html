@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webmin Samba Setup Guide</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #64748b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--secondary);
+            font-size: 1.25rem;
+            font-weight: 300;
+        }
+
+        .intro-box {
+            background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 40px;
+            text-align: left;
+        }
+
+        .intro-box h3 {
+            margin-top: 0;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            padding: 35px;
+            margin-bottom: 35px;
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: var(--text);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 15px;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+        }
+
+        h3 {
+            color: var(--primary);
+            margin-top: 25px;
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+
+        /* Steps */
+        .step-list {
+            list-style: none;
+            padding: 0;
+            counter-reset: step;
+        }
+
+        .step-list li {
+            position: relative;
+            padding-left: 45px;
+            margin-bottom: 15px;
+        }
+
+        .step-list li::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: var(--primary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            font-size: 15px;
+            line-height: 28px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+        }
+
+        .breadcrumb {
+            background: #f1f5f9;
+            color: var(--secondary);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        /* Permissions Grid */
+        .perm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .perm-item {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .perm-code {
+            display: block;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .perm-title {
+            font-weight: bold;
+            color: var(--text);
+            display: block;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+
+        .perm-desc {
+            font-size: 0.9rem;
+            color: var(--secondary);
+        }
+
+        /* Tags */
+        .tag-private {
+            color: var(--primary);
+            background: #eff6ff;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .tag-group {
+            color: var(--accent-purple);
+            background: #f5f3ff;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .tag-public {
+            color: var(--accent-green);
+            background: #ecfdf5;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .tag-warn {
+            color: var(--accent-orange);
+            background: #fffbeb;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .note {
+            background: #fffbeb;
+            border-left: 4px solid var(--accent-orange);
+            color: #92400e;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.95rem;
+        }
+
+        .warning-box {
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-item {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .feature-icon {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .wiki-link {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 24px;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        .wiki-link:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                margin: 20px auto;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .perm-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Webmin Guide</h1>
+            <p class="subtitle">Simplified Server Management for your Raspberry Pi</p>
+        </header>
+
+        <div class="intro-box">
+            <h3>🚀 What is Webmin?</h3>
+            <p>Webmin is an <strong>advanced web-based interface</strong> for system administration. It simplifies the
+                process of managing your Linux server by allowing you to perform complex tasks through an easy-to-use
+                GUI, <strong>automatically updating</strong> all required configuration files for you.</p>
+            <p>Key Benefits:</p>
+            <ul>
+                <li><strong>Syntax Protection:</strong> Prevents errors and warns you before potentially dangerous
+                    actions.</li>
+                <li><strong>Remote Access:</strong> Manage your server from any device on your network via a browser.
+                </li>
+                <li><strong>Modular Design:</strong> Over 100 modules to manage everything from Users to Firewalls.</li>
+                <li><strong>Seamless Mixing:</strong> Recognizes manual configuration changes made via the terminal.
+                </li>
+            </ul>
+            <a href="https://webmin.com/docs/" class="wiki-link" target="_blank">📖 Explore the Official Wiki</a>
+        </div>
+
+        <!-- PERMISSIONS SIMPLIFIED -->
+        <div class="card">
+            <h2>🔑 Permissions Simplified</h2>
+            <p>Permissions control who can read, write, or enter a folder. Instead of using complex letters, Webmin uses
+                simple codes.</p>
+
+            <div class="perm-grid">
+                <div class="perm-item">
+                    <span class="perm-code">700</span>
+                    <span class="perm-title" style="color: var(--primary);">Locked Down</span>
+                    <span class="perm-desc">Only <strong>the owner</strong> has access. Maximum privacy.</span>
+                </div>
+                <div class="perm-item">
+                    <span class="perm-code">770</span>
+                    <span class="perm-title" style="color: var(--accent-purple);">Team Access</span>
+                    <span class="perm-desc">The owner and <strong>members of the group</strong> can access.</span>
+                </div>
+                <div class="perm-item">
+                    <span class="perm-code">777</span>
+                    <span class="perm-title" style="color: var(--accent-green);">Public</span>
+                    <span class="perm-desc"><strong>Everyone</strong> on the network can see and edit.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILE SHARING SCENARIOS -->
+        <div class="card">
+            <h2>📂 Samba Windows File Sharing</h2>
+            <p>Follow these steps to create folders that show up in Windows File Explorer or Mac Finder.</p>
+
+            <!-- Scenario 1 -->
+            <h3 style="border-top: 1px solid #eee; padding-top: 20px;">1. Private Personal Share <span
+                    class="tag-private">Recommendation</span></h3>
+            <p><em>Access: Only you.</em></p>
+            <div class="breadcrumb">Samba ➝ Create a new file share</div>
+            <ul class="step-list">
+                <li><strong>Share Name</strong>: <code>private_vault</code></li>
+                <li><strong>Permissions</strong>: <code>700</code></li>
+                <li><strong>Security ➝ Valid Users</strong>: Your username</li>
+                <li><strong>File Permissions ➝ New File Mode</strong>: <code>600</code> (Only owner reads/writes)</li>
+            </ul>
+
+            <!-- Scenario 2 -->
+            <h3 style="border-top: 1px solid #eee; padding-top: 20px;">2. Family/Team Share <span
+                    class="tag-group">Shared</span></h3>
+            <p><em>Access: Everyone in a specific group.</em></p>
+            <div class="breadcrumb">Samba ➝ Create a new file share</div>
+            <ul class="step-list">
+                <li><strong>Share Name</strong>: <code>family_photos</code></li>
+                <li><strong>Create with Group</strong>: <code>family</code></li>
+                <li><strong>Permissions</strong>: <code>770</code></li>
+                <li><strong>Security ➝ Valid Users</strong>: <code>@family</code></li>
+            </ul>
+
+            <!-- Scenario 3 -->
+            <h3 style="border-top: 1px solid #eee; padding-top: 20px;">3. Public Guest Share <span
+                    class="tag-public">Open</span></h3>
+            <p><em>Access: Anyone on WiFi (No password).</em></p>
+            <div class="breadcrumb">Samba ➝ Create a new file share</div>
+            <ul class="step-list">
+                <li><strong>Share Name</strong>: <code>guest_files</code></li>
+                <li><strong>Owner / Group</strong>: <code>nobody</code> / <code>nogroup</code></li>
+                <li><strong>Permissions</strong>: <code>777</code></li>
+                <li><strong>Security ➝ Guest Access</strong>: Yes</li>
+            </ul>
+        </div>
+
+        <!-- BANDWIDTH MONITORING (Moved below Samba) -->
+        <div class="card" style="border-left: 5px solid var(--accent-orange);">
+            <div style="display:flex; align-items:center; justify-content: space-between;">
+                <h2>📊 Bandwidth Monitoring</h2>
+                <span class="tag-warn">Advanced Info</span>
+            </div>
+            <p>Monitor real-time traffic to see which services or devices are using your internet.</p>
+
+            <h3>Quick Setup</h3>
+            <div class="breadcrumb">Networking ➝ Bandwidth Monitoring</div>
+            <ul class="step-list">
+                <li>Select <strong>Setup limits on selected interfaces</strong>.</li>
+                <li>Select your interface (<code>eth0</code> for Ethernet, <code>wlan0</code> for WiFi).</li>
+                <li>Click <strong>Setup Now</strong> to start logging.</li>
+                <li>Go to <strong>Daily Traffic</strong> to view usage stats.</li>
+            </ul>
+
+            <div class="warning-box">
+                <strong>⚠️ IMPORTANT:</strong> This feature logs every packet header to a database.
+                On a Raspberry Pi, this can <strong>slow down your network</strong> and <strong>fill up your SD
+                    card</strong> if left on forever. Use it for debugging, then turn it off.
+            </div>
+        </div>
+
+        <!-- OTHER POWERFUL MODULES -->
+        <div class="card">
+            <h2>✨ Other Powerful Modules to Explore</h2>
+            <p>Webmin can manage almost every part of your server. Here are the highlights:</p>
+
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <span class="feature-icon">📁</span>
+                    <strong>Advanced File Manager</strong>
+                    <p>A full desktop-like file explorer in your browser. Move, edit, zip, and permission files without
+                        SSH.</p>
+                    <div class="breadcrumb" style="font-size: 0.8rem; margin: 5px 0;">Others ➝ File Manager</div>
+                </div>
+
+                <div class="feature-item">
+                    <span class="feature-icon">🧱</span>
+                    <strong>Linux Firewall</strong>
+                    <p>Secure your server by allowing or blocking specific ports and IP addresses using a visual
+                        rule-maker.</p>
+                    <div class="breadcrumb" style="font-size: 0.8rem; margin: 5px 0;">Networking ➝ Linux Firewall</div>
+                </div>
+
+                <div class="feature-item">
+                    <span class="feature-icon">📦</span>
+                    <strong>Software Packages</strong>
+                    <p>The "App Store" for your server. Update your system and install new dependencies with one click.
+                    </p>
+                    <div class="breadcrumb" style="font-size: 0.8rem; margin: 5px 0;">System ➝ Software Packages</div>
+                </div>
+
+                <div class="feature-item">
+                    <span class="feature-icon">🔍</span>
+                    <strong>System Logs</strong>
+                    <p>Read logs from all your services in one place. Perfect for troubleshooting why a service won't
+                        start.</p>
+                    <div class="breadcrumb" style="font-size: 0.8rem; margin: 5px 0;">System ➝ System Logs</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER LINK -->
+        <div style="text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid var(--border);">
+            <p style="color: var(--secondary); font-size: 0.95rem;">
+                Need more help? Check the <a href="https://webmin.com/docs/intro/" target="_blank"
+                    style="color: var(--primary); font-weight: 600;">Official Introduction</a> or the
+                <a href="https://webmin.com/docs/modules/samba-windows-file-sharing/" target="_blank"
+                    style="color: var(--primary); font-weight: 600;">Samba Module Guide</a>.
+            </p>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

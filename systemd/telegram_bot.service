@@ -1,0 +1,15 @@
+[Unit]
+Description=Pi Server Dual Telegram Bot
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/pi-server-bot
+EnvironmentFile=/home/pi/pi-server-setup/setup.conf
+ExecStart=/opt/pi-server-bot/venv/bin/python /opt/pi-server-bot/dual_bot.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
