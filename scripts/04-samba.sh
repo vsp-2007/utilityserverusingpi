@@ -102,12 +102,23 @@ fi
 # 3. Configure Shares
 echo "Configuring smb.conf..."
 mkdir -p /home/"$SMB_USER"/share
-chown "$SMB_USER":"$SMB_USER" /home/"$SMB_USER"/share
+
+# Ensure the parent directory is accessible and the share block is owned
+chown -R "$SMB_USER":"$SMB_USER" /home/"$SMB_USER"
+chmod 755 /home/"$SMB_USER"
 chmod 770 /home/"$SMB_USER"/share
 
-cp "$SCRIPT_DIR/config/smb.conf" /etc/samba/smb.conf
-# Replace 'rebel' placeholder if user is different
-sed -i "s/rebel/$SMB_USER/g" /etc/samba/smb.conf
+# Backup defaults and append our config block
+if [ ! -f /etc/samba/smb.conf.bak ]; then
+    echo "Backing up default smb.conf..."
+    cp /etc/samba/smb.conf /etc/samba/smb.conf.bak
+fi
+
+# Restore clean default before appending (vital if script is run multiple times)
+cp /etc/samba/smb.conf.bak /etc/samba/smb.conf
+
+# Prepare and append template
+sed "s/rebel/$SMB_USER/g" "$SCRIPT_DIR/config/smb.conf.template" >> /etc/samba/smb.conf
 
 service smbd restart
 service nmbd restart
