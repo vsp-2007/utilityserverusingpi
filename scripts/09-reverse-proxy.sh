@@ -93,8 +93,24 @@ server {
     server_name _;
     
     location / {
-        return 200 '<html><body><h1>Raspberry Pi Gateway</h1><p>Services are running.</p><ul><li><a href="http://pi.home">Pi-hole</a></li><li><a href="http://pdf.home">Stirling PDF</a></li><li><a href="http://grafana.home">Grafana</a></li></ul></body></html>';
+        return 200 '<html><body><h1>Raspberry Pi Gateway</h1><p>Services are running.</p><ul><li><a href="http://dashboard.home">Dashboard (Cockpit)</a></li><li><a href="http://pi.home">Pi-hole</a></li><li><a href="http://pdf.home">Stirling PDF</a></li><li><a href="http://grafana.home">Grafana</a></li></ul></body></html>';
         add_header Content-Type text/html;
+    }
+}
+
+# Cockpit (dashboard.home)
+server {
+    listen 80;
+    server_name dashboard.home;
+
+    location / {
+        proxy_pass http://localhost:9091;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
     }
 }
 
@@ -182,6 +198,7 @@ echo "-----------------------------------------------------"
 echo "IMPORTANT: You must now configure Local DNS in Pi-hole:"
 echo "1. Go to http://<YOUR_PI_IP>:8081/admin/dns_records.php"
 echo "2. Add the following records pointing to YOUR PI'S IP address:"
+echo "   - dashboard.home"
 echo "   - pdf.home"
 echo "   - pi.home"
 echo "   - grafana.home"

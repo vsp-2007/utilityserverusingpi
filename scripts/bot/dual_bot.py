@@ -339,23 +339,7 @@ async def admin_pdr(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text(f"❌ Failed: {stdout} {stderr}")
 
-async def admin_check_system(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Trigger a local Wazuh scan (Syscheck/Rootcheck/SCA)."""
-    if not await admin_check(update): return
 
-    # Check if wazuh-manager is installed and active
-    _, _, code = await async_run_command(["systemctl", "is-active", "--quiet", "wazuh-manager"])
-    if code != 0:
-        await update.message.reply_text("❌ Wazuh Manager is not installed or not running.")
-        return
-
-    await update.message.reply_text("⏳ Initiating system security check (Syscheck & Rootcheck)... \nI'll report back when the scan finishes.")
-    
-    # Force run syscheck/rootcheck locally on the manager (agent 000)
-    _, stderr, code = await async_run_command(["sudo", "/var/ossec/bin/agent_control", "-r", "-u", "000"])
-    
-    if code != 0:
-        await update.message.reply_text(f"⚠️ Failed to trigger scan: {stderr}")
 
 async def admin_announce(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not await admin_check(update): return
@@ -422,7 +406,6 @@ async def main():
     admin_app.add_handler(CommandHandler("deny", admin_deny_request))
     admin_app.add_handler(CommandHandler("announce", admin_announce))
     admin_app.add_handler(CommandHandler("pdr", admin_pdr))
-    admin_app.add_handler(CommandHandler("check", admin_check_system))
 
     # 3. Run Both
     async with user_app:

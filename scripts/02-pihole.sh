@@ -48,18 +48,45 @@ echo "✅ Automated whitelisting configured (Weekly updates scheduled)."
 # 6. Configure Blocklists via SQLite (The reliable method for v5+)
 echo "Configuring Blocklists (Medium/Aggressive)..."
 
-# Primary: StevenBlack Unified + Gambling + Porn (Covers Ads, Malware, 18+)
-LIST_MAIN="https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/gambling-porn/hosts"
-# Ads (Adaway)
-LIST_ADS="https://adaway.org/hosts.txt"
-# Malware (URLHaus)
-LIST_MALWARE="https://urlhaus.abuse.ch/downloads/hostfile/"
-# Telemetry
-LIST_TELEMETRY="https://v.firebog.net/hosts/static/w3kbl.txt"
+# Comprehensive Blocklists (Malware, Tracking, Telemetry, Spam)
+BLOCKLISTS=(
+    "https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/gambling-porn/hosts"
+    "https://raw.githubusercontent.com/PolishFiltersTeam/KADhosts/master/KADhosts.txt"
+    "https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.Spam/hosts"
+    "https://v.firebog.net/hosts/static/w3kbl.txt"
+    "https://adaway.org/hosts.txt"
+    "https://v.firebog.net/hosts/AdguardDNS.txt"
+    "https://v.firebog.net/hosts/Admiral.txt"
+    "https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt"
+    "https://v.firebog.net/hosts/Easylist.txt"
+    "https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext"
+    "https://raw.githubusercontent.com/FadeMind/hosts.extras/master/UncheckyAds/hosts"
+    "https://raw.githubusercontent.com/bigdargon/hostsVN/master/hosts"
+    "https://v.firebog.net/hosts/Easyprivacy.txt"
+    "https://v.firebog.net/hosts/Prigent-Ads.txt"
+    "https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.2o7Net/hosts"
+    "https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt"
+    "https://hostfiles.frogeye.fr/firstparty-trackers-hosts.txt"
+    "https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareHosts.txt"
+    "https://v.firebog.net/hosts/Prigent-Crypto.txt"
+    "https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.Risk/hosts"
+    "https://phishing.army/download/phishing_army_blocklist_extended.txt"
+    "https://gitlab.com/quidsup/notrack-blocklists/raw/master/notrack-malware.txt"
+    "https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt"
+    "https://raw.githubusercontent.com/AssoEchap/stalkerware-indicators/master/generated/hosts"
+    "https://urlhaus.abuse.ch/downloads/hostfile/"
+    "https://lists.cyberhost.uk/malware.txt"
+)
 
 # Add to gravity.db
 GRAVITY_DB="/etc/pihole/gravity.db"
-for url in "$LIST_MAIN" "$LIST_ADS" "$LIST_MALWARE" "$LIST_TELEMETRY" "$PIHOLE_EXTRA_BLOCKLIST"; do
+
+# First, process any user-supplied extra blocklist
+if [ -n "$PIHOLE_EXTRA_BLOCKLIST" ]; then
+    BLOCKLISTS+=("$PIHOLE_EXTRA_BLOCKLIST")
+fi
+
+for url in "${BLOCKLISTS[@]}"; do
     if [ -n "$url" ]; then
         # Check if already exists
         if sqlite3 "$GRAVITY_DB" "SELECT COUNT(*) FROM adlist WHERE address = '$url';" | grep -q "0"; then
