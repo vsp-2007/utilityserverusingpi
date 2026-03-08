@@ -15,3 +15,6 @@
 !uninstall/
 !uninstall/**
 !install.sh
+!setup.conf.example
+!config/
+!config/**

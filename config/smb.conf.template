@@ -1,0 +1,10 @@
+[share]
+   comment = Pi Share
+   path = /home/rebel/share
+   browseable = yes
+   read only = no
+   create mask = 0770
+   directory mask = 0770
+   valid users = rebel
+   force user = rebel
+   force group = rebel

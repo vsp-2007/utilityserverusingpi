@@ -1,0 +1,26 @@
+# User Credentials
+# If left empty, the script will prompt for them
+PI_USER="rebel"
+PI_PASS="" # Caution: Plaintext password (optional, can be entered interactively)
+
+# Tailscale
+TAILSCALE_AUTH_KEY="" # Optional: If provided, runs 'tailscale up --authkey ...'
+
+# Monitoring (Prometheus/Grafana/Alertmanager)
+GRAFANA_ADMIN_PASS="0987654321"
+
+# Interactive Telegram Bots
+# Admin Bot: Full control, Private alerts
+TELEGRAM_ADMIN_TOKEN=""      # e.g. 123456789:ABC...
+TELEGRAM_ADMIN_CHAT_ID=""    # e.g. 123456789
+# User Bot: Public/Group status reporting
+TELEGRAM_USER_TOKEN=""       # e.g. 123456789:XYZ...
+
+# Samba/Webmin
+SMB_USER="rebel"
+SMB_PASS="" # If empty, will prompt
+webmin_enabled="true"
+
+# Pi-hole
+PIHOLE_PASSWORD=""
+PIHOLE_EXTRA_BLOCKLIST="" # URL to a blocklist (e.g., https://example.com/list.txt)

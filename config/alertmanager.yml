@@ -1,0 +1,28 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'telegram_bot'
+
+receivers:
+- name: 'telegram_bot'
+  telegram_configs:
+  - bot_token: 'PLACEHOLDER_TOKEN'
+    chat_id: PLACEHOLDER_CHAT_ID
+    parse_mode: 'HTML'
+    message: '{{ range .Alerts }}
+      {{ if eq .Labels.alertname "DailyReport" }}
+      📊 <b>DAILY SYSTEM REPORT</b> 📊
+      {{ .Annotations.message }}
+      {{ else }}
+      {{ if eq .Status "firing" }}🔥 <b>PROBLEM DETECTED</b> 🔥{{ else }}✅ <b>ISSUE RESOLVED</b>{{ end }}
+      <b>{{ .Labels.alertname }}</b>
+      <pre>{{ .Annotations.summary }}</pre>
+      <i>{{ .Annotations.description }}</i>
+      Severity: <b>{{ .Labels.severity }}</b>
+      {{ end }}
+      {{ end }}'
