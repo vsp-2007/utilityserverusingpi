@@ -452,7 +452,8 @@ show_summary() {
     # Nginx Proxy
     if [[ "$selection" == "10" ]] || [[ "$selection" =~ [Aa] ]]; then
         echo "## Reverse Proxy (Domains)"
-        echo "   - Dashboard:     http://pi.home (Pi-hole)"
+        echo "   - Dashboard:     http://dashboard.home (Cockpit)"
+        echo "   - Pi-hole:       http://pi.home"
         echo "   - PDF Tools:     http://pdf.home"
         echo "   - Grafana:       http://grafana.home"
         echo "   - Prometheus:    http://prometheus.home"
@@ -460,17 +461,10 @@ show_summary() {
         echo
     fi
 
-    # Wazuh Security Engine
-    if [[ "$selection" == "11" ]] || [[ "$selection" =~ [Aa] ]]; then
-        echo "## Wazuh Security Engine"
-        echo "   - Status:        Running locally (Optimized)"
-        echo "   - Logs:          /var/ossec/logs (Monitored by log2ram)"
-        echo "   - Telegram:      Daily JSON dumps + On-demand /check"
-        echo
-    fi
+
     
     # Cockpit
-    if [[ "$selection" == "12" ]] || [[ "$selection" =~ [Aa] ]]; then
+    if [[ "$selection" == "11" ]] || [[ "$selection" =~ [Aa] ]]; then
         echo "## Cockpit (System Administration)"
         echo "   - URL:           https://$IP:9091"
         echo "   - Login:         Use Pi System Credentials"
