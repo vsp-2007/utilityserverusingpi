@@ -96,7 +96,7 @@ sed -i 's/<logall_json>yes/<logall_json>no/' "$WAZUH_CONFIG"
 
 # 5.2 Tune Syscheck (FIM)
 sed -i '/<syscheck>/,/<\/syscheck>/ {
-  s/<frequency>.*<\/frequency>/<frequency>172800<\/frequency>\n    <scan_time>02:00<\/scan_time>\n    <scan_day>wednesday,sunday<\/scan_day>/
+  s/<frequency>.*<\/frequency>/<frequency>172800<\/frequency>/
   s/<directories check_all="yes">\/etc,\/usr\/bin,\/usr\/sbin<\/directories>/<directories check_all="yes">\/etc,\/usr\/bin,\/usr\/sbin<\/directories>/
   # Ensure realtime is off
   s/<directories check_all="yes" realtime="yes">/<directories check_all="yes">/g
@@ -104,7 +104,7 @@ sed -i '/<syscheck>/,/<\/syscheck>/ {
 
 # 5.3 Tune Rootcheck
 sed -i '/<rootcheck>/,/<\/rootcheck>/ {
-  s/<frequency>.*<\/frequency>/<frequency>604800<\/frequency>\n    <scan_time>03:00<\/scan_time>\n    <scan_day>tuesday<\/scan_day>/
+  s/<frequency>.*<\/frequency>/<frequency>604800<\/frequency>/
 }' "$WAZUH_CONFIG"
 
 # 5.4 Tune Vulnerability Detector (NVD) - 7 Days
@@ -123,7 +123,7 @@ done
 
 # 6. Telegram Integration Hook
 echo "Setting up Telegram Integration..."
-cp scripts/custom-telegram.py "$TELEGRAM_SCRIPT"
+cp scripts/integrations/custom-telegram.py "$TELEGRAM_SCRIPT"
 chmod 750 "$TELEGRAM_SCRIPT"
 chown root:wazuh "$TELEGRAM_SCRIPT"
 
@@ -144,7 +144,7 @@ if ! grep -q "<name>custom-telegram</name>" "$WAZUH_CONFIG"; then
     <name>custom-telegram</name>\n\
     <hook_url>none</hook_url>\n\
     <level>7</level>\n\
-    <rule_id>503,514,20002</rule_id>\n\
+    <rule_id>503,509,514,20002</rule_id>\n\
     <alert_format>json</alert_format>\n\
   </integration>' "$WAZUH_CONFIG"
 fi

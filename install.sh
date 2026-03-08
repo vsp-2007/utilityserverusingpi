@@ -280,11 +280,13 @@ echo "7) Telegram Bot (Interactive Control)"
 LOCAL_INST="" ; [ -f "/opt/localsend/localsend_app" ] || [ -f "/usr/share/applications/localsend_app.desktop" ] && LOCAL_INST=" [Installed]"
 WAZUH_INST="" ; [ -d "/var/ossec" ] && WAZUH_INST=" [Installed]"
 NGINX_INST="" ; command -v nginx >/dev/null 2>&1 && NGINX_INST=" [Installed]"
+COCKPIT_INST="" ; [ -d "/etc/cockpit" ] && COCKPIT_INST=" [Installed]"
 
 echo "8) Localsend (File Sharing App)$LOCAL_INST"
 echo "9) Stirling-PDF (PDF Tools)"
 echo "10) Nginx Reverse Proxy (Domain Access)$NGINX_INST"
 echo "11) Wazuh Security Engine (Manager & Alerts)$WAZUH_INST"
+echo "12) Cockpit (Web-based Administration)$COCKPIT_INST"
 echo "A) Install Everything"
 echo "Q) Quit"
 
@@ -330,6 +332,7 @@ case $selection in
     9) execute_script "08-stirling-pdf.sh" ;;
     10) execute_script "09-reverse-proxy.sh" ;;
     11) execute_script "09-wazuh.sh" ;;
+    12) execute_script "10-cockpit.sh" ;;
     [Aa]*)
         execute_script "00-system.sh"
         execute_script "01-network.sh"
@@ -343,6 +346,7 @@ case $selection in
         execute_script "08-stirling-pdf.sh"
         execute_script "09-wazuh.sh"
         execute_script "09-reverse-proxy.sh"
+        execute_script "10-cockpit.sh"
         ;;
     [Qq]*) exit 0 ;;
     *) echo "Invalid selection"; exit 1 ;;
@@ -465,6 +469,14 @@ show_summary() {
         echo "   - Status:        Running locally (Optimized)"
         echo "   - Logs:          /var/ossec/logs (Monitored by log2ram)"
         echo "   - Telegram:      Daily JSON dumps + On-demand /check"
+        echo
+    fi
+    
+    # Cockpit
+    if [[ "$selection" == "12" ]] || [[ "$selection" =~ [Aa] ]]; then
+        echo "## Cockpit (System Administration)"
+        echo "   - URL:           https://$IP:9091"
+        echo "   - Login:         Use Pi System Credentials"
         echo
     fi
     

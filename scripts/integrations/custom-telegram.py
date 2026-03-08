@@ -40,7 +40,7 @@ def main():
     # Rule 514 is Rootcheck scan completed
     # Rule 20002 is Vulnerability Scanner completed
     
-    is_scan_complete = str(rule_id) in ["503", "514", "20002"]
+    is_scan_complete = str(rule_id) in ["503", "509", "514", "20002"]
     
     message = ""
     
