@@ -19,6 +19,7 @@ fi
 # 2. Setup Virtual Environment
 if [ ! -d "$VENV_DIR" ]; then
     echo "Creating Python Virtual Environment..."
+    apt-get update -qq && apt-get install -y python3-venv
     python3 -m venv "$VENV_DIR"
 fi
 
@@ -38,10 +39,10 @@ echo "Configuring Systemd Service..."
 cp "$SERVICE_SRC" "$SERVICE_DEST"
 
 # Dynamic Config Path Injection
-if [ -n "$CONFIG_FILE" ]; then
-    echo "Updating EnvironmentFile path to: $CONFIG_FILE"
-    sed -i "s|EnvironmentFile=.*|EnvironmentFile=$CONFIG_FILE|" "$SERVICE_DEST"
-fi
+# Using the absolute path of the current directory where the script is run (should be the pi-server-setup root containing setup.conf)
+REAL_CONFIG="$(pwd)/setup.conf"
+echo "Updating EnvironmentFile path to: $REAL_CONFIG"
+sed -i "s|EnvironmentFile=.*|EnvironmentFile=$REAL_CONFIG|" "$SERVICE_DEST"
 
 systemctl daemon-reload
 systemctl enable telegram_bot.service

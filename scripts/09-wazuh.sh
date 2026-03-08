@@ -38,8 +38,10 @@ fi
 echo "Setting up Log2Ram for SD Card protection..."
 if ! command -v log2ram >/dev/null; then
     echo "Installing log2ram..."
-    echo "deb http://packages.azlux.fr/debian/ bookworm main" | tee /etc/apt/sources.list.d/azlux.list
-    wget -qO - https://azlux.fr/repo.gpg.key | apt-key add -
+    apt-get update || true
+    apt-get install -y gnupg2 wget
+    wget -qO - https://azlux.fr/repo.gpg.key | gpg --dearmor --yes -o /usr/share/keyrings/azlux-archive-keyring.gpg
+    echo "deb [signed-by=/usr/share/keyrings/azlux-archive-keyring.gpg] http://packages.azlux.fr/debian/ bookworm main" | tee /etc/apt/sources.list.d/azlux.list
     apt-get update
     apt-get install -y log2ram
 fi
@@ -70,7 +72,7 @@ fi
 
 # 3. Add Wazuh Repository
 echo "Adding Wazuh Repositories..."
-apt-get install -y curl apt-transport-https unzip wget libcap2-bin software-properties-common lsb-release gnupg2
+apt-get install -y curl apt-transport-https unzip wget libcap2-bin lsb-release gnupg2
 curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | gpg --no-default-keyring --keyring gnupg-ring:/usr/share/keyrings/wazuh.gpg --import && chmod 644 /usr/share/keyrings/wazuh.gpg
 echo "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" | tee /etc/apt/sources.list.d/wazuh.list
 apt-get update

@@ -201,6 +201,9 @@ check_creds() {
             if [[ ! $keep_admin_tg =~ ^[Yy]$ ]]; then
                 unset TELEGRAM_ADMIN_TOKEN
                 unset TELEGRAM_ADMIN_CHAT_ID
+            else
+                grep -q "^TELEGRAM_ADMIN_TOKEN=" "$CONFIG_FILE" && sed -i "s|^TELEGRAM_ADMIN_TOKEN=.*|TELEGRAM_ADMIN_TOKEN=\"$TELEGRAM_ADMIN_TOKEN\"|" "$CONFIG_FILE" || echo "TELEGRAM_ADMIN_TOKEN=\"$TELEGRAM_ADMIN_TOKEN\"" >> "$CONFIG_FILE"
+                grep -q "^TELEGRAM_ADMIN_CHAT_ID=" "$CONFIG_FILE" && sed -i "s|^TELEGRAM_ADMIN_CHAT_ID=.*|TELEGRAM_ADMIN_CHAT_ID=\"$TELEGRAM_ADMIN_CHAT_ID\"|" "$CONFIG_FILE" || echo "TELEGRAM_ADMIN_CHAT_ID=\"$TELEGRAM_ADMIN_CHAT_ID\"" >> "$CONFIG_FILE"
             fi
         fi
         ensure_var "TELEGRAM_ADMIN_TOKEN" "Enter Admin Bot Token" "false"
@@ -214,6 +217,8 @@ check_creds() {
             keep_user_tg=${keep_user_tg:-Y}
             if [[ ! $keep_user_tg =~ ^[Yy]$ ]]; then
                 unset TELEGRAM_USER_TOKEN
+            else
+                grep -q "^TELEGRAM_USER_TOKEN=" "$CONFIG_FILE" && sed -i "s|^TELEGRAM_USER_TOKEN=.*|TELEGRAM_USER_TOKEN=\"$TELEGRAM_USER_TOKEN\"|" "$CONFIG_FILE" || echo "TELEGRAM_USER_TOKEN=\"$TELEGRAM_USER_TOKEN\"" >> "$CONFIG_FILE"
             fi
         fi
         ensure_var "TELEGRAM_USER_TOKEN" "Enter User Bot Token (Group Bot)" "false"
@@ -272,11 +277,14 @@ echo "5) File Sharing (Samba, Webmin)"
 echo "6) Utilities (Status Report Script)"
 echo "7) Telegram Bot (Interactive Control)"
 
-echo "8) Localsend (File Sharing App)"
+LOCAL_INST="" ; [ -f "/opt/localsend/localsend_app" ] || [ -f "/usr/share/applications/localsend_app.desktop" ] && LOCAL_INST=" [Installed]"
+WAZUH_INST="" ; [ -d "/var/ossec" ] && WAZUH_INST=" [Installed]"
+NGINX_INST="" ; command -v nginx >/dev/null 2>&1 && NGINX_INST=" [Installed]"
 
+echo "8) Localsend (File Sharing App)$LOCAL_INST"
 echo "9) Stirling-PDF (PDF Tools)"
-echo "10) Nginx Reverse Proxy (Domain Access)"
-echo "11) Wazuh Security Engine (Manager & Alerts)"
+echo "10) Nginx Reverse Proxy (Domain Access)$NGINX_INST"
+echo "11) Wazuh Security Engine (Manager & Alerts)$WAZUH_INST"
 echo "A) Install Everything"
 echo "Q) Quit"
 

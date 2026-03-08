@@ -351,9 +351,8 @@ async def admin_check_system(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     await update.message.reply_text("⏳ Initiating system security check (Syscheck & Rootcheck)... \nI'll report back when the scan finishes.")
     
-    # Force run all agent modules locally
-    # agent_control -r -a restarts the agent processes, which by default runs syscheck/rootcheck on start
-    _, stderr, code = await async_run_command(["sudo", "/var/ossec/bin/agent_control", "-r", "-a"])
+    # Force run syscheck/rootcheck locally on the manager (agent 000)
+    _, stderr, code = await async_run_command(["sudo", "/var/ossec/bin/agent_control", "-r", "-u", "000"])
     
     if code != 0:
         await update.message.reply_text(f"⚠️ Failed to trigger scan: {stderr}")
