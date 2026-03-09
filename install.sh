@@ -281,11 +281,13 @@ LOCAL_INST="" ; [ -f "/opt/localsend/localsend_app" ] || [ -f "/usr/share/applic
 
 NGINX_INST="" ; command -v nginx >/dev/null 2>&1 && NGINX_INST=" [Installed]"
 COCKPIT_INST="" ; [ -d "/etc/cockpit" ] && COCKPIT_INST=" [Installed]"
+N8N_INST="" ; [ -d "/var/lib/n8n" ] && N8N_INST=" [Installed]"
 
 echo "8) Localsend (File Sharing App)$LOCAL_INST"
 echo "9) Stirling-PDF (PDF Tools)"
 echo "10) Nginx Reverse Proxy (Domain Access)$NGINX_INST"
 echo "11) Cockpit (Web-based Administration)$COCKPIT_INST"
+echo "12) n8n Automation Engine$N8N_INST"
 echo "A) Install Everything"
 echo "Q) Quit"
 
@@ -331,6 +333,7 @@ case $selection in
     9) execute_script "08-stirling-pdf.sh" ;;
     10) execute_script "09-reverse-proxy.sh" ;;
     11) execute_script "10-cockpit.sh" ;;
+    12) execute_script "11-n8n.sh" ;;
     [Aa]*)
         execute_script "00-system.sh"
         execute_script "01-network.sh"
@@ -344,6 +347,7 @@ case $selection in
         execute_script "08-stirling-pdf.sh"
         execute_script "09-reverse-proxy.sh"
         execute_script "10-cockpit.sh"
+        execute_script "11-n8n.sh"
         ;;
     [Qq]*) exit 0 ;;
     *) echo "Invalid selection"; exit 1 ;;
@@ -454,6 +458,8 @@ show_summary() {
         echo "## Reverse Proxy (Domains)"
         echo "   - Dashboard:     http://dashboard.home (Cockpit)"
         echo "   - Pi-hole:       http://pi.home"
+        echo "   - Local n8n:     http://n8n.home"
+        echo "   - Webmin:        http://webmin.home"
         echo "   - PDF Tools:     http://pdf.home"
         echo "   - Grafana:       http://grafana.home"
         echo "   - Prometheus:    http://prometheus.home"
@@ -468,6 +474,14 @@ show_summary() {
         echo "## Cockpit (System Administration)"
         echo "   - URL:           https://$IP:9091"
         echo "   - Login:         Use Pi System Credentials"
+        echo
+    fi
+    
+    # n8n
+    if [[ "$selection" == "12" ]] || [[ "$selection" =~ [Aa] ]]; then
+        echo "## n8n Automation Engine"
+        echo "   - URL:           http://$IP:5678 (or http://n8n.home)"
+        echo "   - Config:        /etc/n8n/env"
         echo
     fi
     
