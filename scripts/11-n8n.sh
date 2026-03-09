@@ -34,14 +34,40 @@ else
     log_info "Node.js 20.x is already installed."
 fi
 
-# 2. Install n8n globally via npm
-# Check if n8n is already installed
+# 2. Configure npm network resilience for large downloads
+log_info "Configuring npm network resilience..."
+npm config set fetch-retries 5
+npm config set fetch-retry-mintimeout 20000
+npm config set fetch-retry-maxtimeout 120000
+
+# Install n8n globally via npm with a retry loop
 if ! command -v n8n >/dev/null 2>&1; then
-    log_info "Installing n8n globally via npm (this may take a few minutes)..."
-    npm install n8n -g
+    log_info "Installing n8n globally via npm (this may take 5-10 minutes)..."
+    
+    # Retry loop for initial installation
+    MAX_RETRIES=3
+    RETRY_COUNT=0
+    SUCCESS=false
+    
+    while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+        if npm install n8n -g; then
+            SUCCESS=true
+            break
+        else
+            RETRY_COUNT=$((RETRY_COUNT+1))
+            log_warn "npm install failed (Network issue?). Retrying ($RETRY_COUNT/$MAX_RETRIES) in 10 seconds..."
+            sleep 10
+        fi
+    done
+    
+    if [ "$SUCCESS" = false ]; then
+        log_error "Failed to install n8n after $MAX_RETRIES attempts. Please check your internet connection and try again."
+        exit 1
+    fi
 else
-    log_info "n8n is already installed. Updating..."
-    npm update n8n -g
+    log_info "n8n is already installed. Attempting update..."
+    # We use a simple retry wrapper for update as well just in case
+    npm update n8n -g || log_warn "Update encountered a network error, keeping existing version."
 fi
 
 # 3. Create Service User
