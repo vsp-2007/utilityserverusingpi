@@ -93,6 +93,9 @@ WEBHOOK_URL=http://n8n.home
 
 # Secure local credentials by restricting them to the file system owner
 N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+
+# Disable secure cookies since Nginx handles the reverse proxy (and Tailscale encrypts traffic)
+N8N_SECURE_COOKIE=false
 EOF
 
 chmod 600 /etc/n8n/env
