@@ -73,6 +73,7 @@ echo "Removing Service Users..."
 userdel prometheus || true
 userdel node_exporter || true
 userdel alertmanager || true
+userdel smbdata || true
 
 # 3. Samba & Webmin
 echo -e "\n${YELLOW}--- Removing Samba & Webmin ---${NC}"

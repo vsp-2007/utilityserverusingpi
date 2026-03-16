@@ -101,12 +101,19 @@ fi
 
 # 3. Configure Shares
 echo "Configuring smb.conf..."
-mkdir -p /home/"$SMB_USER"/share
 
-# Ensure the parent directory is accessible and the share block is owned
-chown -R "$SMB_USER":"$SMB_USER" /home/"$SMB_USER"
-chmod 755 /home/"$SMB_USER"
-chmod 770 /home/"$SMB_USER"/share
+# Create service account if it doesn't exist
+if ! id "smbdata" &>/dev/null; then
+    echo "Creating smbdata service account..."
+    useradd -M -s /usr/sbin/nologin smbdata
+fi
+
+mkdir -p /srv/samba/share
+
+# Ensure the parent directory is accessible and the share block is owned by smbdata
+chown -R smbdata:smbdata /srv/samba
+chmod 755 /srv/samba
+chmod 2770 /srv/samba/share
 
 # Backup defaults and append our config block
 if [ ! -f /etc/samba/smb.conf.bak ]; then
@@ -195,104 +202,78 @@ if [ "$webmin_enabled" == "true" ]; then
 <body>
 
 <h1>Webmin Samba Share Guide</h1>
-<p>This manual guides you through creating different types of file shares using the Webmin interface.</p>
+<p>This manual guides you through creating different types of file shares using the Webmin interface after the recent <code>smbdata</code> service account refactoring.</p>
+
+<div class="note">
+    <strong>⚠️ Important Concept: Service Account (`smbdata`)</strong><br>
+    All your shared files shouldn't be scattered across user home directories anymore. We now store everything centrally in <code>/srv/samba/</code>. To prevent annoying "Access Denied" errors when multiple users edit the same file, Samba will now pretend every network user is the <code>smbdata</code> background account when writing to the disk. Access is managed purely by the <em>Valid Users</em> field.
+</div>
 
 <div class="cheat-sheet">
-    <h2>🔑 Permissions Cheat Sheet</h2>
-    <p>Use these <strong>Octal Codes</strong> in the <em>"Create with permissions"</em> field:</p>
-    <table>
-        <tr><th>Code</th><th>Type</th><th>Meaning</th></tr>
-        <tr><td><strong>700</strong></td><td>Private</td><td>Owner has full access. Nobody else.</td></tr>
-        <tr><td><strong>770</strong></td><td>Group</td><td>Owner and Group have access. Others blocked.</td></tr>
-        <tr><td><strong>777</strong></td><td>Public</td><td>Everyone can Read/Write.</td></tr>
-    </table>
+    <h2>🔑 Universal Permissions Cheat Sheet</h2>
+    <p>For almost all shares you create now, use these exact settings in the <strong>"File Permission Options"</strong> area in Webmin to guarantee maximum compatibility:</p>
+    <ul>
+        <li><strong>New Unix file mode:</strong> <code>0660</code></li>
+        <li><strong>New Unix directory mode:</strong> <code>2770</code></li>
+        <li><strong>Force Unix user:</strong> <code>smbdata</code></li>
+        <li><strong>Force Unix group:</strong> <code>smbdata</code></li>
+    </ul>
 </div>
 
 <div class="scenario">
     <h2>🔒 Scenario 1: Private Personal Folder</h2>
-    <p>Accessible ONLY by you.</p>
+    <p>Accessible ONLY by one specific user.</p>
     <div class="step">
         <h3>Part A: Creation</h3>
         <ul>
-            <li><strong>Share name</strong>: <code>myshare_private</code></li>
-            <li><strong>Create with owner</strong>: <code>&lt;your_username&gt;</code></li>
-            <li><strong>Create with permissions</strong>: <code>700</code></li>
+            <li><strong>Share name</strong>: <code>private_vault</code></li>
+            <li><strong>Directory to share</strong>: <code>/srv/samba/private_vault</code></li>
         </ul>
     </div>
     <div class="step">
         <h3>Part B: Access Control</h3>
         <ul>
             <li><strong>Writable</strong>: Yes</li>
-            <li><strong>Valid Users</strong>: <code>&lt;your_username&gt;</code></li>
-        </ul>
-    </div>
-    <div class="step">
-        <h3>Part C: File Permission Options</h3>
-        <ul>
-            <li><strong>New Unix file mode</strong>: <code>600</code></li>
-            <li><strong>New Unix directory mode</strong>: <code>700</code></li>
-            <li><strong>Force Unix user</strong>: <code>&lt;your_username&gt;</code></li>
+            <li><strong>Valid Users</strong>: <code>&lt;your_username&gt;</code> (Only this user can connect)</li>
         </ul>
     </div>
 </div>
 
 <div class="scenario">
-    <h2>👥 Scenario 2: Private Group Share</h2>
-    <p>Accessible by a specific team (e.g. editors).</p>
+    <h2>👥 Scenario 2: Shared Team Folder</h2>
+    <p>Accessible by multiple specific users.</p>
     <div class="step">
         <h3>Part A: Creation</h3>
         <ul>
             <li><strong>Share name</strong>: <code>team_projects</code></li>
-            <li><strong>Create with group</strong>: <code>&lt;group_name&gt;</code></li>
-            <li><strong>Create with permissions</strong>: <code>770</code></li>
+            <li><strong>Directory to share</strong>: <code>/srv/samba/team_projects</code></li>
         </ul>
     </div>
     <div class="step">
         <h3>Part B: Access Control</h3>
         <ul>
             <li><strong>Writable</strong>: Yes</li>
-            <li><strong>Valid Users</strong>: <code>@&lt;group_name&gt;</code></li>
-        </ul>
-    </div>
-    <div class="step">
-        <h3>Part C: File Permission Options</h3>
-        <ul>
-            <li><strong>New Unix file mode</strong>: <code>660</code></li>
-            <li><strong>New Unix directory mode</strong>: <code>770</code></li>
-            <li><strong>Force Unix group</strong>: <code>&lt;group_name&gt;</code></li>
+            <li><strong>Valid Users</strong>: <code>alice, bob, charlie</code> (Separate with commas, or use <code>@groupname</code>)</li>
         </ul>
     </div>
 </div>
 
 <div class="scenario">
     <h2>🌍 Scenario 3: Public Guest Share</h2>
-    <p>Everyone on network can Read/Write.</p>
+    <p>Everyone on the network can Read/Write without a password.</p>
     <div class="step">
         <h3>Part A: Creation</h3>
         <ul>
             <li><strong>Share name</strong>: <code>public_drop</code></li>
-            <li><strong>Create with owner</strong>: <code>nobody</code></li>
-            <li><strong>Create with group</strong>: <code>nogroup</code></li>
-            <li><strong>Create with permissions</strong>: <code>777</code></li>
+            <li><strong>Directory to share</strong>: <code>/srv/samba/public_drop</code></li>
         </ul>
-    </div>
-    <div class="note">
-        <strong>Why nobody?</strong> It maps to the default Guest account, preventing permission errors.
     </div>
     <div class="step">
         <h3>Part B: Access Control</h3>
         <ul>
             <li><strong>Writable</strong>: Yes</li>
             <li><strong>Guest Access</strong>: Yes</li>
-            <li><strong>Guest Unix User</strong>: <code>nobody</code></li>
-        </ul>
-    </div>
-    <div class="step">
-        <h3>Part C: File Permission Options</h3>
-        <ul>
-            <li><strong>New Unix file mode</strong>: <code>666</code></li>
-            <li><strong>New Unix directory mode</strong>: <code>777</code></li>
-            <li><strong>Force Unix user</strong>: <code>nobody</code></li>
+            <li><strong>Guest Unix User</strong>: <code>smbdata</code></li>
         </ul>
     </div>
 </div>
