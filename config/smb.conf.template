@@ -1,10 +1,11 @@
 [share]
-   comment = Pi Share
+   comment = Pi Public Share
    path = /srv/samba/share
    browseable = yes
    read only = no
+   guest ok = yes
+   guest only = yes
    create mask = 0660
    directory mask = 2770
-   valid users = rebel
    force user = smbdata
    force group = smbdata

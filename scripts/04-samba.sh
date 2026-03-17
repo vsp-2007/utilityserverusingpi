@@ -183,99 +183,102 @@ if [ "$webmin_enabled" == "true" ]; then
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webmin Samba Guide</title>
+    <title>Webmin Samba Share Guide</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; background: #f4f4f9; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; background: #f4f4f9; }
         h1, h2, h3 { color: #2c3e50; }
         h1 { border-bottom: 2px solid #3498db; padding-bottom: 10px; }
         h2 { margin-top: 30px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
         .cheat-sheet { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { text-align: left; padding: 10px; border-bottom: 1px solid #eee; }
-        th { background: #f8f9fa; }
-        code { background: #e8f0fe; color: #000; padding: 2px 5px; border-radius: 3px; font-family: 'Courier New', Courier, monospace; }
-        .scenario { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .step { margin-bottom: 15px; }
-        .note { background: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; border-left: 5px solid #ffeeba; }
+        .scenario { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 40px; }
+        .step { margin-bottom: 25px; padding: 15px; border-left: 4px solid #3498db; background: #fcfcfc; }
+        .note { background: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; border-left: 5px solid #ffeeba; margin: 10px 0; }
+        code { background: #e8f0fe; color: #000; padding: 2px 5px; border-radius: 3px; font-family: 'Courier New', Courier, monospace; font-weight: bold; }
+        ul { padding-left: 20px; }
     </style>
 </head>
 <body>
 
-<h1>Webmin Samba Share Guide</h1>
-<p>This manual guides you through creating different types of file shares using the Webmin interface after the recent <code>smbdata</code> service account refactoring.</p>
+<h1>Webmin Samba Share Manual</h1>
+<p>This guide explains how to create shares under the <code>smbdata</code> service account model.</p>
 
 <div class="note">
-    <strong>⚠️ Important Concept: Service Account (`smbdata`)</strong><br>
-    All your shared files shouldn't be scattered across user home directories anymore. We now store everything centrally in <code>/srv/samba/</code>. To prevent annoying "Access Denied" errors when multiple users edit the same file, Samba will now pretend every network user is the <code>smbdata</code> background account when writing to the disk. Access is managed purely by the <em>Valid Users</em> field.
-</div>
-
-<div class="cheat-sheet">
-    <h2>🔑 Universal Permissions Cheat Sheet</h2>
-    <p>For almost all shares you create now, use these exact settings in the <strong>"File Permission Options"</strong> area in Webmin to guarantee maximum compatibility:</p>
-    <ul>
-        <li><strong>New Unix file mode:</strong> <code>0660</code></li>
-        <li><strong>New Unix directory mode:</strong> <code>2770</code></li>
-        <li><strong>Force Unix user:</strong> <code>smbdata</code></li>
-        <li><strong>Force Unix group:</strong> <code>smbdata</code></li>
-    </ul>
+    <strong>💡 Key Strategy:</strong> We use <code>map to guest = bad user</code> globally. This allows you to browse <code>\\IP</code> to see the list of folders. We then use <code>Guest ok: No</code> on private folders to trigger the password prompt.
 </div>
 
 <div class="scenario">
-    <h2>🔒 Scenario 1: Private Personal Folder</h2>
-    <p>Accessible ONLY by one specific user.</p>
+    <h2>🔒 Type 1: Private Sharing (Password Required)</h2>
+    
     <div class="step">
-        <h3>Part A: Creation</h3>
+        <h3>Page 1: Create Share</h3>
         <ul>
-            <li><strong>Share name</strong>: <code>private_vault</code></li>
-            <li><strong>Directory to share</strong>: <code>/srv/samba/private_vault</code></li>
+            <li><strong>Share name:</strong> <code>private_vault</code></li>
+            <li><strong>Directory to share:</strong> <code>/srv/samba/private_vault</code></li>
+            <li><strong>Automatically create directory:</strong> <code>Yes</code></li>
+            <li><strong>Create with owner:</strong> <code>smbdata</code></li>
+            <li><strong>Create with permissions:</strong> <code>2770</code></li>
+            <li><strong>Create with group:</strong> <code>smbdata</code></li>
         </ul>
     </div>
-    <div class="step">
-        <h3>Part B: Access Control</h3>
-        <ul>
-            <li><strong>Writable</strong>: Yes</li>
-            <li><strong>Valid Users</strong>: <code>&lt;your_username&gt;</code> (Only this user can connect)</li>
-        </ul>
-    </div>
-</div>
 
-<div class="scenario">
-    <h2>👥 Scenario 2: Shared Team Folder</h2>
-    <p>Accessible by multiple specific users.</p>
     <div class="step">
-        <h3>Part A: Creation</h3>
+        <h3>Page 2: Security & Access Control</h3>
         <ul>
-            <li><strong>Share name</strong>: <code>team_projects</code></li>
-            <li><strong>Directory to share</strong>: <code>/srv/samba/team_projects</code></li>
+            <li><strong>Writable:</strong> <code>Yes</code></li>
+            <li><strong>Guest Access:</strong> <code>None</code> (Critical!)</li>
+            <li><strong>Valid users:</strong> <code>your_username</code></li>
         </ul>
     </div>
+
     <div class="step">
-        <h3>Part B: Access Control</h3>
+        <h3>Page 3: File Permission Options</h3>
         <ul>
-            <li><strong>Writable</strong>: Yes</li>
-            <li><strong>Valid Users</strong>: <code>alice, bob, charlie</code> (Separate with commas, or use <code>@groupname</code>)</li>
+            <li><strong>New Unix file mode:</strong> <code>0660</code></li>
+            <li><strong>New Unix directory mode:</strong> <code>2770</code></li>
+            <li><strong>Force Unix user:</strong> <code>smbdata</code></li>
+            <li><strong>Force Unix group:</strong> <code>smbdata</code></li>
         </ul>
     </div>
 </div>
 
 <div class="scenario">
-    <h2>🌍 Scenario 3: Public Guest Share</h2>
-    <p>Everyone on the network can Read/Write without a password.</p>
+    <h2>🌍 Type 2: Public Sharing (Instant Access)</h2>
+    
     <div class="step">
-        <h3>Part A: Creation</h3>
+        <h3>Page 1: Create Share</h3>
         <ul>
-            <li><strong>Share name</strong>: <code>public_drop</code></li>
-            <li><strong>Directory to share</strong>: <code>/srv/samba/public_drop</code></li>
+            <li><strong>Share name:</strong> <code>public_drop</code></li>
+            <li><strong>Directory to share:</strong> <code>/srv/samba/public_drop</code></li>
+            <li><strong>Automatically create directory:</strong> <code>Yes</code></li>
+            <li><strong>Create with owner:</strong> <code>smbdata</code></li>
+            <li><strong>Create with permissions:</strong> <code>2777</code></li>
+            <li><strong>Create with group:</strong> <code>smbdata</code></li>
         </ul>
     </div>
+
     <div class="step">
-        <h3>Part B: Access Control</h3>
+        <h3>Page 2: Security & Access Control</h3>
         <ul>
-            <li><strong>Writable</strong>: Yes</li>
-            <li><strong>Guest Access</strong>: Yes</li>
-            <li><strong>Guest Unix User</strong>: <code>smbdata</code></li>
+            <li><strong>Writable:</strong> <code>Yes</code></li>
+            <li><strong>Guest Access:</strong> <code>Yes</code></li>
+            <li><strong>Guest Unix user:</strong> <code>smbdata</code></li>
+            <li><strong>Valid users:</strong> (Leave Empty)</li>
         </ul>
     </div>
+
+    <div class="step">
+        <h3>Page 3: File Permission Options</h3>
+        <ul>
+            <li><strong>New Unix file mode:</strong> <code>0666</code></li>
+            <li><strong>New Unix directory mode:</strong> <code>2777</code></li>
+            <li><strong>Force Unix user:</strong> <code>smbdata</code></li>
+            <li><strong>Force Unix group:</strong> <code>smbdata</code></li>
+        </ul>
+    </div>
+</div>
+
+<div class="note">
+    <strong>⚠️ Troubleshoot:</strong> If a folder doesn't ask for a password when it should, run <code>net use * /delete /y</code> in Windows CMD to clear your cached login session.
 </div>
 
 </body>
