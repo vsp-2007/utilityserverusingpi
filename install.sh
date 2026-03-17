@@ -412,7 +412,7 @@ show_summary() {
         echo "     - User:        ${SMB_USER:-$PI_USER}"
         echo "     - Password:    (As configured)"
         echo "     - Config:      /etc/samba/smb.conf"
-        echo "     - Path:        /home/${SMB_USER:-$PI_USER}/share"
+        echo "     - Path:        /srv/samba/share"
         echo
     fi
 
