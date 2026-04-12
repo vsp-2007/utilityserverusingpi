@@ -18,3 +18,6 @@
 !setup.conf.example
 !config/
 !config/**
+!README.md
+!STEPS.md
+!ABOUT.md
