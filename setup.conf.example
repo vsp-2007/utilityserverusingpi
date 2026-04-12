@@ -1,13 +1,13 @@
 # User Credentials
 # If left empty, the script will prompt for them
-PI_USER="rebel"
+PI_USER=""
 PI_PASS="" # Caution: Plaintext password (optional, can be entered interactively)
 
 # Tailscale
 TAILSCALE_AUTH_KEY="" # Optional: If provided, runs 'tailscale up --authkey ...'
 
 # Monitoring (Prometheus/Grafana/Alertmanager)
-GRAFANA_ADMIN_PASS="0987654321"
+GRAFANA_ADMIN_PASS=""
 
 # Interactive Telegram Bots
 # Admin Bot: Full control, Private alerts
