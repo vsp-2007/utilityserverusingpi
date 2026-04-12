@@ -97,7 +97,7 @@ ensure_var() {
 
 # --- Main Menu ---
 echo "========================================="
-echo " Raspberry Pi All-in-One Installer"
+echo " SCRIPT ORCHESTRATOR"
 echo "========================================="
 
 # Ensure credentials for selected modules are present before running
@@ -136,7 +136,6 @@ check_creds() {
         
         # Admin Bot
         # 1. Attempt to recover from existing system files (Service or Alertmanager)
-        # 1. Attempt to recover from existing system files (Service or Alertmanager)
         # Check active Systemd Service (Checking this first/independently to get User Token too)
         if [ -f /etc/systemd/system/telegram_bot.service ]; then
              EXISTING_ENV=$(grep "^EnvironmentFile=" /etc/systemd/system/telegram_bot.service | cut -d= -f2)
@@ -163,7 +162,7 @@ check_creds() {
         fi
         
         if [ -z "$TELEGRAM_ADMIN_TOKEN" ]; then
-             # Fallback: Check Persistent Backup (for User Token mainly, but also Admin)
+             # Fallback: Check Persistent Backup (for User Token mainly, but also Admin) usually stored as hidden file in the root dir
              if [ -z "$TELEGRAM_ADMIN_TOKEN" ] || [ -z "$TELEGRAM_USER_TOKEN" ]; then
                  if [ -f /etc/pi-server-credentials.conf ]; then
                       source /etc/pi-server-credentials.conf
@@ -224,11 +223,10 @@ check_creds() {
         ensure_var "TELEGRAM_USER_TOKEN" "Enter User Bot Token (Group Bot)" "false"
     fi
     
-    # Check Samba if running 5 or A
+    # Check Samba if running 
     if [[ "$selection" == "5" ]] || [[ "$selection" =~ ^[Aa] ]]; then
          ensure_var "SMB_USER" "Enter Samba Username" "false"
-         # SMB_PASS removed from upfront prompt
-         
+                  
          # Webmin
          read -p "Install Webmin (Web UI for System/Samba)? [Y/n] " install_webmin
          install_webmin=${install_webmin:-Y}
@@ -245,7 +243,7 @@ check_creds() {
          fi
     fi
 
-    # Create System-Wide Backup of Credentials (for recovery if folder is deleted)
+    # Create System-Wide Backup of Credentials (for recovery if folder is deleted).for now its not hardly encrypted and can be exposed easily(basic encryption)
     if [ -n "$TELEGRAM_ADMIN_TOKEN" ] || [ -n "$TELEGRAM_USER_TOKEN" ] || [ -n "$SMB_USER" ]; then
         echo "# Pi Server persistent credentials backup" > /etc/pi-server-credentials.conf
         chmod 600 /etc/pi-server-credentials.conf
@@ -256,9 +254,9 @@ check_creds() {
         echo "✅ Credentials backed up to /etc/pi-server-credentials.conf for future recovery."
     fi
 
-    # Check Network if running 2 or A
+    # Check Network if running 
     if [[ "$selection" == "2" ]] || [[ "$selection" =~ ^[Aa] ]]; then
-         # Only if not authenticated
+         # Only if not authenticated(i didnt tested this function btw!)
           if ! command -v tailscale >/dev/null || ! tailscale status >/dev/null 2>&1; then
              read -p "Do you have a Tailscale Auth Key? (Press Enter to skip/login interactive): " ts_key
              if [ -n "$ts_key" ]; then
@@ -270,12 +268,12 @@ check_creds() {
 
 echo "Select modules to install:"
 echo "1) System Basics (Update, User, SSH, Tools)"
-echo "2) Network (Tailscale, Static IP Helper)"
+echo "2) Network (Tailscale, Static IP Helper)"#static ip helper isnt that much of a help and it will always return same its dumb
 echo "3) Pi-hole (Ad Blocking)"
 echo "4) Monitoring Stack (Prometheus, Grafana, Alertmanager)"
 echo "5) File Sharing (Samba, Webmin)"
-echo "6) Utilities (Status Report Script)"
-echo "7) Telegram Bot (Interactive Control)"
+echo "6) Utilities"
+echo "7) Telegram Bot "
 
 LOCAL_INST="" ; [ -f "/opt/localsend/localsend_app" ] || [ -f "/usr/share/applications/localsend_app.desktop" ] && LOCAL_INST=" [Installed]"
 
